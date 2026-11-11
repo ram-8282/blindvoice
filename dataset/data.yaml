@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 75
+names: ['bathroom sign', 'bench', 'building map', 'camera', 'can and bottle trash cans', 'chair', 'charging station', 'clock', 'defibrillator', 'defibrillator sign', 'door', 'doors', 'doorway', 'elevator buttons', 'elevator doors', 'emergency button', 'exit doors', 'exit sign', 'fire alarm', 'fire alarm signal', 'fire extinguisher', 'fire extinguisher sign', 'fire hose box', 'floor layout map', 'hand sanitizer', 'handicap push button', 'light switch', 'men bathroom sign', 'outlet', 'painting', 'paper trash can', 'poster', 'poster board', 'posters', 'room 100 sign', 'room 101 sign', 'room 104 sign', 'room 105 sign', 'room 106 sign', 'room 107 sign', 'room 108 sign', 'room 109 sign', 'room 110 sign', 'room 111 sign', 'room 112 sign', 'room 113 sign', 'room 116 sign', 'room 117 sign', 'room 118 sign', 'room 119 sign', 'room 120 sign', 'room 121 sign', 'room 122b sign', 'room 124 sign', 'room 125 sign', 'room 126 sign', 'room 127 sign', 'room 222b sign', 'room 380 sign', 'sign', 'stairs sign', 'statue', 'stuff', 'table', 'trash can', 'trash cans', 'tv monitor', 'vending machine', 'vending machine sign', 'water fountain', 'water fountain sign', 'water sprinkler', 'weather forecast monitor', 'wet floor sign', 'women bathroom sign']
+
+roboflow:
+  workspace: final-project-4152
+  project: indoor-navigation-v8ctg
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/final-project-4152/indoor-navigation-v8ctg/dataset/1

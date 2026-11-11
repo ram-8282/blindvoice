@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistive Navigation Engine - Voice, Route, Landmark, Hazard & Spatial Audio</title>
+  <meta name="description" content="Assistive Navigation Platform featuring Voice Control, Route Dead Reckoning, Visual Landmark Verification, Spatial Hazard Safety, and Real-Time Spatial Audio Synthesizer for blind users.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+  <!-- Screen Reader Live Announcements -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 19 21 12 17 5 21 12 2"/>
+          </svg>
+        </div>
+        <div>
+          <h1>VoxNav Engine <span class="badge-assistive">Assistive Platform</span></h1>
+          <p class="subtitle">Voice Target Extraction, Dead Reckoning, Landmark Verification, Hazard Safety & 3D Spatial Audio</p>
+          <p id="gnani-badge" class="gnani-badge" data-state="checking" role="status" aria-live="polite">
+            <span class="gnani-dot" aria-hidden="true"></span>
+            <span id="gnani-badge-text">Voice powered by Gnani.ai — checking…</span>
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Developer dashboard <-> user-facing Airport Mode -->
+        <button id="btn-app-mode" class="btn btn-secondary mode-toggle" aria-pressed="false" title="Switch to the airport navigation screen">Airport Navigation Mode</button>
+
+        <!-- Active tracking source: GPS / dead reckoning / visual match -->
+        <span id="nav-mode-badge" class="nav-mode-badge" data-mode="DEAD_RECKONING" role="status" aria-live="polite">[INDOOR DEAD RECKONING]</span>
+
+        <!-- Engine Mode Switcher Tabs -->
+        <div class="nav-tabs" role="tablist" aria-label="Engine Selection">
+          <button id="tab-voice-engine" class="tab-btn active" role="tab" aria-selected="true" aria-controls="view-voice-engine">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+            Voice
+          </button>
+          <button id="tab-route-engine" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-route-engine">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            Route
+          </button>
+          <button id="tab-landmark-engine" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-landmark-engine">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Landmark
+          </button>
+          <button id="tab-hazard-engine" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-hazard-engine">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Hazard
+          </button>
+          <button id="tab-audio-engine" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-audio-engine">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+            3D Audio
+          </button>
+        </div>
+
+        <button id="toggle-high-contrast" class="btn btn-secondary" aria-label="Toggle Ultra High Contrast mode">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20z"/></svg>
+          Contrast Mode
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- ============ AIRPORT MODE (user-facing) ============ -->
+    <section id="airport-mode-view" class="airport-mode-view hidden" aria-label="Airport navigation" data-state="IDLE">
+      <div id="airport-camera-slot" class="airport-camera-slot"><!-- camera viewport is moved here --></div>
+
+      <div class="airport-status">
+        <p id="airport-destination" class="airport-destination">No destination yet</p>
+        <p id="airport-progress" class="airport-progress"></p>
+      </div>
+
+      <p id="airport-instruction" class="airport-instruction" aria-live="polite">Press Start, then say where you want to go — for example, "Take me to Gate B12".</p>
+      <p id="airport-heard" class="airport-heard"></p>
+
+      <button id="btn-airport-start" class="airport-start-btn" aria-pressed="false">Start Hands-Free Navigation</button>
+      <button id="btn-airport-demo-steps" class="airport-demo-btn" title="For laptops without a step sensor">+10 steps (demo)</button>
+    </section>
+
+    
+    <!-- VIEW 1: VOICE CONTROL ENGINE -->
+    <div id="view-voice-engine" class="engine-view-grid active">
+      <section class="panel primary-panel" aria-labelledby="voice-input-heading">
+        <h2 id="voice-input-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          Voice Command Engine Input
+        </h2>
+
+        <!-- Microphone Selection Dropdown -->
+        <div class="mic-device-selector-group">
+          <div class="mic-device-header">
+            <label for="mic-device-select" class="form-label-device">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+              <span>Audio Input Device:</span>
+            </label>
+            <button id="btn-refresh-mics" class="btn btn-xs btn-outline" type="button" title="Refresh available microphones" aria-label="Refresh available microphones">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Refresh Devices
+            </button>
+          </div>
+          <select id="mic-device-select" class="form-control select-device" aria-label="Select audio input microphone device">
+            <option value="">Default System Microphone</option>
+          </select>
+        </div>
+
+        <div class="mic-container" id="mic-container">
+          <div class="mic-button-wrapper">
+            <button id="btn-mic" class="mic-button" aria-label="Tap or press Space to activate voice microphone listening">
+              <div class="mic-waves" id="mic-waves"></div>
+              <svg class="mic-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Active Audio Visualizer inside Mic Button Container -->
+          <div id="mic-audio-visualizer" class="mic-audio-visualizer" aria-hidden="true" title="Audio frequency visualizer">
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+            <span class="v-bar"></span>
+          </div>
+
+          <p id="mic-status" class="mic-status-text" aria-live="polite">Click button or press Microphone to speak</p>
+          <div id="live-stt-preview" class="live-stt-preview hidden" aria-live="polite"></div>
+          <label class="toggle-switch-label conversation-toggle" for="toggle-conversation-mode" title="Listen, reply, and listen again automatically. Say &quot;stop&quot; to end.">
+            <input type="checkbox" id="toggle-conversation-mode">
+            <span class="toggle-switch-text">Hands-free conversation</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="raw-speech-input" class="form-label">
+              <strong>Raw Spoken Speech Input</strong> <code>{raw_user_speech}</code>
+            </label>
+            <span id="live-stt-badge" class="live-stt-badge hidden">
+              <span class="pulse-dot"></span> Live Transcribing...
+            </span>
+          </div>
+          <div class="input-with-button">
+            <input type="text" id="raw-speech-input" class="form-control" placeholder="e.g. Where is the nearest washroom?" value="Where is the nearest washroom?">
+            <button id="btn-process" class="btn btn-primary">Process Voice</button>
+          </div>
+        </div>
+
+        <div class="presets-section">
+          <span class="presets-label">Quick Voice Test Scenarios:</span>
+          <div id="presets-container" class="presets-grid"></div>
+        </div>
+
+        <div class="spoken-output-card" id="spoken-card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              Voice Engine Spoken Response
+            </span>
+            <button id="btn-speak-again" class="btn btn-sm btn-outline" aria-label="Replay spoken audio text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Read Aloud
+            </button>
+          </div>
+          <div id="spoken-response-text" class="spoken-response-body">
+            Click "Process Voice" or select a scenario above to test the Voice Engine.
+          </div>
+        </div>
+      </section>
+
+      <section class="panel secondary-panel" aria-labelledby="voice-output-heading">
+        <h2 id="voice-output-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Structured JSON Output (Voice Engine)
+        </h2>
+
+        <div class="metrics-row">
+          <div class="metric-pill">
+            <span class="metric-label">Intent</span>
+            <span id="badge-intent" class="badge badge-neutral">NONE</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Target Entity</span>
+            <span id="badge-target" class="metric-value">-</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Confidence</span>
+            <span id="badge-confidence" class="metric-value">0.00</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Selected Place ID</span>
+            <span id="badge-place-id" class="metric-value">null</span>
+          </div>
+        </div>
+
+        <div class="json-wrapper">
+          <div class="json-header">
+            <span>JSON Schema Output</span>
+            <button id="btn-copy-json" class="btn btn-xs btn-outline">Copy JSON</button>
+          </div>
+          <pre><code id="json-output-code" class="json-code">{\n  "status": "Awaiting input..."\n}</code></pre>
+        </div>
+
+        <details class="config-accordion" open>
+          <summary class="accordion-summary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Location & Candidate Places Settings (500m Radius Filter)
+          </summary>
+          <div class="accordion-content">
+            <div class="form-row">
+              <div class="form-group col">
+                <label for="input-lat" class="form-label">Latitude</label>
+                <input type="number" step="0.000001" id="input-lat" class="form-control form-control-sm" value="17.385040">
+              </div>
+              <div class="form-group col">
+                <label for="input-lon" class="form-label">Longitude</label>
+                <input type="number" step="0.000001" id="input-lon" class="form-control form-control-sm" value="78.486670">
+              </div>
+              <div class="form-group col-auto align-self-end">
+                <button id="btn-use-gps" class="btn btn-sm btn-secondary" title="Get actual device GPS position">Get GPS</button>
+              </div>
+            </div>
+
+            <div class="form-group margin-top-sm">
+              <label for="json-places-input" class="form-label">Candidate Places API Data <code>{json_list_of_places}</code></label>
+              <p id="places-source" class="places-source" data-state="checking" aria-live="polite">Checking Google Maps…</p>
+              <textarea id="json-places-input" class="form-control font-mono text-sm" rows="5"></textarea>
+            </div>
+          </div>
+        </details>
+      </section>
+    </div>
+
+    <!-- VIEW 2: ROUTE PROCESSING ENGINE -->
+    <div id="view-route-engine" class="engine-view-grid">
+      <section class="panel primary-panel" aria-labelledby="route-input-heading">
+        <h2 id="route-input-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
+          Route Step Setup
+        </h2>
+
+        <div class="form-group step-slider-card">
+          <div class="slider-header">
+            <label for="step-length-range" class="form-label">
+              <strong>Average User Step Length</strong>
+            </label>
+            <span id="step-length-value" class="badge badge-navigate">0.70 meters</span>
+          </div>
+          <input type="range" id="step-length-range" min="0.4" max="1.2" step="0.05" value="0.7" class="form-range">
+          <p class="text-sm text-muted">Formula: <code>Distance_meters / step_length_m</code> (Default = 0.70m)</p>
+        </div>
+
+        <div class="form-actions">
+          <button id="btn-process-route" class="btn btn-primary">Process Route Payload</button>
+          <button id="btn-read-route-aloud" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            Read All Milestones Aloud
+          </button>
+        </div>
+      </section>
+
+      <section class="panel secondary-panel" aria-labelledby="route-output-heading">
+        <h2 id="route-output-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Dead Reckoning Milestone Sequence
+        </h2>
+
+        <div class="summary-card">
+          <div class="summary-stat">
+            <span class="stat-label">Total Route Dead Reckoning Steps</span>
+            <span id="route-total-steps" class="stat-value">0 steps</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Total Milestones</span>
+            <span id="route-total-milestones" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div class="milestones-timeline-container">
+          <h3 class="timeline-title">Waypoints & Landmarks Sequence</h3>
+          <div id="milestones-timeline-list" class="milestones-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 3: VISUAL LANDMARK VERIFICATION ENGINE -->
+    <div id="view-landmark-engine" class="engine-view-grid">
+      <section class="panel primary-panel" aria-labelledby="landmark-input-heading">
+        <h2 id="landmark-input-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Camera Frame OCR & YOLO Object Detection Input
+        </h2>
+
+        <div class="camera-simulator-card">
+          <div class="camera-frame-header">
+            <div class="camera-header-left">
+              <span class="camera-status-dot" id="camera-status-dot"></span>
+              <span id="camera-header-title">Live Mobile Camera Stream</span>
+              <span id="camera-status-badge" class="badge-subtle">STANDBY</span>
+            </div>
+            <div class="camera-header-actions">
+              <button id="btn-toggle-camera" class="btn btn-xs btn-outline" type="button" aria-label="Toggle WebCam live stream">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span id="btn-camera-text">Start WebCam</span>
+              </button>
+              <label for="camera-file-input" class="btn btn-xs btn-secondary" title="Upload an image or a video to run detection on" role="button" tabindex="0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Image / Video
+              </label>
+              <input type="file" id="camera-file-input" accept="image/*,video/*" class="sr-only">
+              <button id="btn-video-playpause" class="btn btn-xs btn-outline hidden" type="button" aria-label="Pause uploaded video">Pause</button>
+            </div>
+          </div>
+
+          <div class="camera-viewport" id="camera-viewport">
+            <!-- Working WebCam Video Element -->
+            <video id="camera-video" class="camera-video hidden" autoplay playsinline muted></video>
+
+            <!-- Image Fallback for Uploaded Camera Frames -->
+            <img id="camera-image-fallback" class="camera-image-fallback hidden" alt="" aria-hidden="true">
+
+            <!-- Standby Placeholder -->
+            <div id="camera-placeholder" class="camera-placeholder">
+              <div class="placeholder-grid-lines"></div>
+              <div class="placeholder-content">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <p>WebCam Ready. Click <strong>Start WebCam</strong> or <strong>Upload Image / Video</strong>.</p>
+              </div>
+            </div>
+
+            <!-- Dynamic Bounding Boxes Overlay Container (OCR Cyan & YOLO Green) -->
+            <div id="camera-overlays-container" class="camera-overlays-container"></div>
+
+            <!-- Spatial grid (LEFT / CENTER / RIGHT thirds) and central focal zone (middle 60%) -->
+            <div class="spatial-grid-overlay" aria-hidden="true">
+              <span class="zone-divider" style="left:33.333%"></span>
+              <span class="zone-divider" style="left:66.666%"></span>
+              <span class="focal-zone"><span class="focal-zone-label">FOCAL ZONE</span></span>
+            </div>
+
+            <!-- Priority hazard alert banner -->
+            <div id="hazard-alert-banner" class="hazard-alert-banner hidden" role="alert"></div>
+
+            <!-- Shutter Flash Effect -->
+            <div id="camera-shutter-flash" class="camera-shutter-flash"></div>
+
+            <!-- Viewport HUD Bar -->
+            <div class="camera-hud-bar">
+              <span id="hud-cam-status">STATUS: STANDBY</span>
+              <span id="hud-detections-count">DETECTIONS: —</span>
+              <span id="hud-source-badge">SOURCE: NONE</span>
+            </div>
+          </div>
+
+          <!-- Capture & Simulation Toolbar -->
+          <div class="camera-controls-bar">
+            <button id="btn-simulate-capture" class="btn btn-sm btn-primary" type="button" title="Capture the current frame and run object detection">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+              Capture &amp; Detect
+            </button>
+            <label class="toggle-switch-label" for="toggle-auto-frame-sim">
+              <input type="checkbox" id="toggle-auto-frame-sim">
+              <span class="toggle-switch-text">Auto-Detect Live</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="target-landmark-input" class="form-label">
+            <strong>Current Target Milestone Landmark</strong>
+          </label>
+          <input type="text" id="target-landmark-input" class="form-control" value="Starbucks Coffee">
+        </div>
+
+        <div class="form-actions">
+          <button id="btn-verify-landmark" class="btn btn-primary">Verify Camera Frame</button>
+        </div>
+      </section>
+
+      <section class="panel secondary-panel" aria-labelledby="landmark-output-heading">
+        <h2 id="landmark-output-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Landmark Verification State Output
+        </h2>
+
+        <div id="landmark-status-banner" class="summary-card landmark-match-banner">
+          <div class="summary-stat">
+            <span class="stat-label">Match State</span>
+            <span id="landmark-match-badge" class="badge badge-unknown">AWAITING FRAME</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Matched Landmark</span>
+            <span id="badge-matched-landmark" class="stat-value">—</span>
+          </div>
+        </div>
+
+        <div class="spoken-output-card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              Spoken System Voice Confirmation
+            </span>
+            <button id="btn-speak-landmark" class="btn btn-sm btn-outline">Read Aloud</button>
+          </div>
+          <div id="spoken-landmark-text" class="spoken-response-body">
+            Start the WebCam or upload a frame, then verify.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 4: SPATIAL HAZARD & SAFETY ENGINE -->
+    <div id="view-hazard-engine" class="engine-view-grid">
+      <section class="panel primary-panel" aria-labelledby="hazard-input-heading">
+        <h2 id="hazard-input-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Live Depth Array & Object Detection Input
+        </h2>
+
+        <!-- Monocular Depth & Spatial Radar Field (Multi-Hazard) -->
+        <div class="radar-simulator-card">
+          <div class="radar-header">
+            <span class="radar-status-dot"></span>
+            <span>Monocular Depth & Spatial Radar Field</span>
+            <span id="hazard-count-badge" class="badge badge-unknown" style="margin-left: auto;">3 Hazards Active</span>
+          </div>
+
+          <div class="radar-viewport" id="hazard-radar-viewport" tabindex="0" role="region" aria-label="Monocular Depth & Spatial Radar. Click radar to place or drag hazard markers.">
+            <!-- Range and Zone Rings -->
+            <div class="radar-zone-ring ring-safe"><span class="hazard-zone-tag">SAFE ZONE (&gt; 2.0m)</span></div>
+            <div class="radar-zone-ring ring-override"><span class="hazard-zone-tag">OVERRIDE ZONE (2.0m)</span></div>
+            <div class="radar-zone-ring ring-critical"><span class="hazard-zone-tag">CRITICAL (&lt; 1.2m)</span></div>
+
+            <!-- Radial Angle Lines -->
+            <div class="hazard-azimuth-line az-h-left"><span>-45°</span></div>
+            <div class="hazard-azimuth-line az-h-center"><span>Ahead 0°</span></div>
+            <div class="hazard-azimuth-line az-h-right"><span>+45°</span></div>
+
+            <!-- Multi-hazard markers container -->
+            <div id="hazard-markers-container" class="hazard-markers-container"></div>
+
+            <!-- Legacy single dot maintained for compatibility -->
+            <div class="radar-target-dot" id="radar-target-dot" style="display: none;"></div>
+
+            <!-- Listener / User Center Anchor -->
+            <div class="radar-center-user">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+              <span>USER</span>
+            </div>
+          </div>
+
+          <div class="radar-instructions">
+            <span>💡 <strong>Interactive:</strong> Click radar to add hazard, or drag markers to reposition.</span>
+          </div>
+        </div>
+
+        <!-- Quick Multi-Hazard Presets Row -->
+        <div class="form-group margin-top-xs">
+          <label class="form-label"><strong>Quick Add Hazard Scenarios:</strong></label>
+          <div class="hazard-quick-bar">
+            <button type="button" class="btn btn-xs btn-outline hazard-preset-btn" data-type="pothole" data-dist="0.9" data-angle="-0.4" title="Add Critical Pothole">
+              🚨 + Pothole (0.9m Critical)
+            </button>
+            <button type="button" class="btn btn-xs btn-outline hazard-preset-btn" data-type="branch" data-dist="0.8" data-angle="0.3" title="Add Low Branch">
+              🌿 + Low Branch (0.8m Critical)
+            </button>
+            <button type="button" class="btn btn-xs btn-outline hazard-preset-btn" data-type="curb_drop" data-dist="1.6" data-angle="-0.6" title="Add Curb Drop">
+              ⚠️ + Curb Drop (1.6m Warning)
+            </button>
+            <button type="button" class="btn btn-xs btn-outline hazard-preset-btn" data-type="obstacle" data-dist="2.8" data-angle="0.5" title="Add Distant Obstacle">
+              🚧 + Obstacle (2.8m Safe)
+            </button>
+            <button type="button" id="btn-clear-all-hazards" class="btn btn-xs btn-outline" style="border-color: #64748b; color: #94a3b8;">
+              Clear All
+            </button>
+            <button type="button" id="btn-reset-default-hazards" class="btn btn-xs btn-outline" style="border-color: var(--primary-cyan); color: var(--primary-cyan);">
+              Reset Defaults
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Hazards Chip List -->
+        <div class="form-group">
+          <label class="form-label" style="display: flex; justify-content: space-between;">
+            <strong>Active Tracked Hazards:</strong>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Click chip to inspect/edit</span>
+          </label>
+          <div id="active-hazards-chips" class="hazard-chips-row"></div>
+        </div>
+
+        <!-- Hazard Parameters Editor -->
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="hazard-type-select" class="form-label">Selected Hazard Type</label>
+            <select id="hazard-type-select" class="form-control">
+              <option value="pothole">Pothole (Ground Drop)</option>
+              <option value="curb_drop">Curb Drop-off</option>
+              <option value="branch">Low-Hanging Branch</option>
+              <option value="obstacle">Obstacle / Pole</option>
+              <option value="none">None (Safe Path)</option>
+            </select>
+          </div>
+          <div class="form-group col">
+            <label for="hazard-dist-input" class="form-label">Distance (meters)</label>
+            <input type="number" step="0.1" id="hazard-dist-input" class="form-control" value="1.0" min="0.2" max="5.0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="hazard-angle-range" class="form-label">
+            <strong>Bounding Box X-Center (Spatial Angle)</strong> <code id="hazard-angle-label">-0.50 (Left)</code>
+          </label>
+          <input type="range" id="hazard-angle-range" min="-1.0" max="1.0" step="0.05" value="-0.5" class="form-range">
+        </div>
+
+        <div class="form-actions">
+          <button id="btn-process-hazard" class="btn btn-primary">Process Hazard Safety</button>
+          <button id="btn-play-spatial-ping" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            Play 3D Spatial Audio Ping
+          </button>
+        </div>
+      </section>
+
+      <section class="panel secondary-panel" aria-labelledby="hazard-output-heading">
+        <h2 id="hazard-output-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Spatial Hazard Safety Response
+        </h2>
+
+        <div id="hazard-alert-banner" class="summary-card hazard-critical-banner">
+          <div class="summary-stat">
+            <span class="stat-label">Hazard Status</span>
+            <span id="badge-hazard-present" class="badge badge-unknown">HAZARD PRESENT</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Safety Severity</span>
+            <span id="badge-hazard-severity" class="stat-value text-crimson">CRITICAL</span>
+          </div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-pill">
+            <span class="metric-label">Audio Pan</span>
+            <span id="badge-spatial-pan" class="metric-value">-0.50</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Pitch (Hz)</span>
+            <span id="badge-spatial-pitch" class="metric-value">660 Hz</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Pulse Rate</span>
+            <span id="badge-spatial-pulse" class="metric-value">200 ms</span>
+          </div>
+        </div>
+
+        <div class="spoken-output-card hazard-spoken-card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              Immediate Spoken Alert (&lt; 5 Words)
+            </span>
+            <button id="btn-speak-hazard-alert" class="btn btn-sm btn-outline">Read Alert</button>
+          </div>
+          <div id="spoken-hazard-text" class="spoken-response-body text-critical">
+            "Pothole ahead, step right."
+          </div>
+        </div>
+
+        <div class="json-wrapper">
+          <div class="json-header">
+            <span>Spatial Hazard Output JSON</span>
+            <button id="btn-copy-hazard-json" class="btn btn-xs btn-outline">Copy JSON</button>
+          </div>
+          <pre><code id="json-hazard-output-code" class="json-code">{\n  "hazard_present": true,\n  "severity": "CRITICAL"\n}</code></pre>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 5: REAL-TIME SPATIAL AUDIO SYNTHESIZER ENGINE -->
+    <div id="view-audio-engine" class="engine-view-grid">
+      <section class="panel primary-panel" aria-labelledby="audio-input-heading">
+        <h2 id="audio-input-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+          3D Spatial Location & Target Inputs
+        </h2>
+
+        <!-- Interactive 2D Spatial Audio Radar -->
+        <div class="audio-radar-card">
+          <div class="audio-radar-header">
+            <span class="audio-radar-dot"></span>
+            <span>Interactive 2D Spatial Audio Radar</span>
+            <span class="radar-hint">Drag puck to compute Pan, Pitch &amp; Distance</span>
+          </div>
+          <div class="audio-radar-viewport" id="audio-radar-viewport" tabindex="0" role="region" aria-label="Interactive 2D Spatial Audio Radar. Drag target puck to modify azimuth and distance.">
+            <!-- Distance Brackets & Rings -->
+            <div class="audio-ring ring-far">
+              <span class="audio-ring-label">FAR (&gt; 4.0m) &bull; 220 Hz &bull; Slow Pulse</span>
+            </div>
+            <div class="audio-ring ring-mid">
+              <span class="audio-ring-label">MEDIUM (1.5 - 4.0m) &bull; 440 Hz &bull; Mod Pulse</span>
+            </div>
+            <div class="audio-ring ring-near">
+              <span class="audio-ring-label">NEAR (&lt; 1.5m) &bull; 880 Hz &bull; Fast Pulse</span>
+            </div>
+
+            <!-- Radial Azimuth Guide Lines -->
+            <div class="audio-azimuth-line az-left"><span>-90° (Left)</span></div>
+            <div class="audio-azimuth-line az-mid-left"><span>-45°</span></div>
+            <div class="audio-azimuth-line az-center"><span>0° Ahead</span></div>
+            <div class="audio-azimuth-line az-mid-right"><span>+45°</span></div>
+            <div class="audio-azimuth-line az-right"><span>+90° (Right)</span></div>
+
+            <!-- Draggable Target Puck -->
+            <div class="audio-target-puck" id="audio-target-puck" tabindex="0" role="slider" aria-label="Spatial audio target puck. Drag or use arrow keys to adjust pan and distance." aria-valuemin="-1" aria-valuemax="1" aria-valuenow="-0.6">
+              <div class="puck-ping-wave"></div>
+              <div class="puck-core"></div>
+              <div class="puck-coord-badge" id="puck-coord-badge">X: -0.60 | 1.0m</div>
+            </div>
+
+            <!-- User Center Position -->
+            <div class="audio-center-user">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+              <span>LISTENER</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group margin-top-xs">
+          <label for="audio-xcenter-range" class="form-label">
+            <strong>Bounding Box Center X (Pan Angle)</strong> <code id="audio-xcenter-label">-0.60 (Left)</code>
+          </label>
+          <input type="range" id="audio-xcenter-range" min="-1.0" max="1.0" step="0.05" value="-0.6" class="form-range">
+        </div>
+
+        <div class="form-group">
+          <label for="audio-dist-range" class="form-label">
+            <strong>Distance to Object (Meters)</strong> <code id="audio-dist-label">1.0 meters (Near &lt; 1.5m)</code>
+          </label>
+          <input type="range" id="audio-dist-range" min="0.5" max="8.0" step="0.1" value="1.0" class="form-range">
+        </div>
+
+        <div class="form-group margin-top-sm">
+          <label class="form-label" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+            <input type="checkbox" id="audio-hazard-checkbox" style="width: 20px; height: 20px; accent-color: var(--accent-crimson);" checked>
+            <strong>Critical Hazard Flag</strong> <code>{is_critical_hazard}</code> (Overrides waveform to "sawtooth")
+          </label>
+        </div>
+
+        <div class="form-actions margin-top-sm">
+          <button id="btn-synthesize-audio" class="btn btn-primary">Synthesize Audio Parameters</button>
+          <button id="btn-play-synth-pulse" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            Play 3D Binaural Audio Pulse
+          </button>
+        </div>
+      </section>
+
+      <section class="panel secondary-panel" aria-labelledby="audio-output-heading">
+        <h2 id="audio-output-heading" class="panel-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Normalized Audio Node Config Output
+        </h2>
+
+        <!-- Spatial Parameter Cards -->
+        <div class="metrics-row">
+          <div class="metric-pill">
+            <span class="metric-label">Audio Pan</span>
+            <span id="synth-badge-pan" class="metric-value">-0.60</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Pitch Frequency</span>
+            <span id="synth-badge-freq" class="metric-value">880 Hz</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Gain Level</span>
+            <span id="synth-badge-gain" class="metric-value">1.00</span>
+          </div>
+          <div class="metric-pill">
+            <span class="metric-label">Pulse Interval</span>
+            <span id="synth-badge-pulse" class="metric-value">100 ms</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-stat">
+            <span class="stat-label">Waveform Type</span>
+            <span id="synth-badge-waveform" class="badge badge-unknown">SAWTOOTH (Hazard)</span>
+          </div>
+          <div class="summary-stat">
+            <span class="stat-label">Distance Bracket</span>
+            <span id="synth-badge-bracket" class="stat-value text-crimson">NEAR (&lt; 1.5m)</span>
+          </div>
+        </div>
+
+        <div class="json-wrapper">
+          <div class="json-header">
+            <span>Spatial Audio Node Config JSON</span>
+            <button id="btn-copy-synth-json" class="btn btn-xs btn-outline">Copy JSON</button>
+          </div>
+          <pre><code id="json-synth-output-code" class="json-code">{\n  "audio_node_config": {\n    "pan": -0.6,\n    "frequency_hz": 880,\n    "gain": 1.0,\n    "pulse_interval_ms": 100,\n    "waveform_type": "sawtooth"\n  }\n}</code></pre>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>VoxNav Engine &bull; Assistive Navigation Platform for Blind & Low-Vision Users &bull; WCAG 2.1 AAA Compliant</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.3/dist/ort.min.js"></script>
+  <script type="module" src="app.js?v=7"></script>
+</body>
+</html>

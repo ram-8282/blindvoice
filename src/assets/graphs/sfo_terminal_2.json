@@ -1,0 +1,82 @@
+{
+  "venue_id": "AIRPORT_SFO_TERMINAL_2",
+  "floor_level": "Departures_L2",
+  "start_anchor_node": {
+    "node_id": "NODE_SEC_CHECKPOINT_B_EXIT_L2",
+    "visual_landmark_text": "Security Checkpoint B Exit - All Gates B1-B24",
+    "expected_icon_type": "SECURITY_CHECKPOINT"
+  },
+  "route_path": [
+    {
+      "segment_index": 0,
+      "from_node": "NODE_SEC_CHECKPOINT_B_EXIT_L2",
+      "to_node": "NODE_CENTRAL_ROTUNDA_L2",
+      "distance_steps": 36,
+      "heading_relative_deg": 0,
+      "expected_verification_landmarks": [
+        "Overhead Sign: Gates B1-B24 Straight Ahead",
+        "Information Counter B",
+        "ISO 7001 PI PF 001 Information Icon"
+      ],
+      "requires_level_change": false,
+      "level_change_type": "NONE"
+    },
+    {
+      "segment_index": 1,
+      "from_node": "NODE_CENTRAL_ROTUNDA_L2",
+      "to_node": "NODE_ESCALATOR_BANK_B_BASE_L2",
+      "distance_steps": 24,
+      "heading_relative_deg": 270,
+      "expected_verification_landmarks": [
+        "Starbucks Storefront Logo",
+        "Overhead Sign: Gates B1-B14 & Lounges Up",
+        "ISO 7001 PI PF 004 Escalator Up Pictogram"
+      ],
+      "requires_level_change": false,
+      "level_change_type": "NONE"
+    },
+    {
+      "segment_index": 2,
+      "from_node": "NODE_ESCALATOR_BANK_B_BASE_L2",
+      "to_node": "NODE_ESCALATOR_BANK_B_LANDING_L3",
+      "distance_steps": 18,
+      "heading_relative_deg": 0,
+      "expected_verification_landmarks": [
+        "Tactile Ground Surface Indicators (TGSI)",
+        "Overhead Sign: Concourse Level 3 - Gates B1-B14",
+        "ISO 7001 PI PF 004 Escalator Incline Symbol"
+      ],
+      "requires_level_change": true,
+      "level_change_type": "ESCALATOR"
+    },
+    {
+      "segment_index": 3,
+      "from_node": "NODE_ESCALATOR_BANK_B_LANDING_L3",
+      "to_node": "NODE_CORRIDOR_RESTROOM_HUB_L3",
+      "distance_steps": 32,
+      "heading_relative_deg": 90,
+      "expected_verification_landmarks": [
+        "Overhead Sign: Gates B10-B14 Straight",
+        "Hudson News Storefront",
+        "ISO 7001 PI PF 003 Public Restroom Pictogram"
+      ],
+      "requires_level_change": false,
+      "level_change_type": "NONE"
+    },
+    {
+      "segment_index": 4,
+      "from_node": "NODE_CORRIDOR_RESTROOM_HUB_L3",
+      "to_node": "NODE_GATE_B12_PODIUM_L3",
+      "distance_steps": 42,
+      "heading_relative_deg": 0,
+      "expected_verification_landmarks": [
+        "High-Contrast Illuminated Gate Sign: Gate B12",
+        "Flight Information Display Screen: Gate B12",
+        "ISO 7001 PI TF 001 Aircraft Departure Symbol"
+      ],
+      "requires_level_change": false,
+      "level_change_type": "NONE"
+    }
+  ]
+}
+

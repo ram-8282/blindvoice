@@ -1,0 +1,24 @@
+{
+  "name": "blindvoice-backend",
+  "version": "1.0.0",
+  "description": "Backend API service for Assistive Navigation Voice Engine and Route Dead-Reckoning Processor",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --env-file-if-exists=.env --watch server.js",
+    "test": "node testBackend.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "keywords": [
+    "assistive-navigation",
+    "express-backend",
+    "voice-engine",
+    "route-processor"
+  ],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "blindvoice-engine",
+  "version": "1.0.0",
+  "description": "Assistive Navigation Platform: Voice Control, Dead Reckoning Route Processor, Visual Landmark Verifier, Spatial Hazard Safety & Real-Time Spatial Audio Synthesizer",
+  "main": "voiceEngine.js",
+  "type": "module",
+  "scripts": {
+    "test:voice": "node testEngine.js",
+    "test:route": "node testRouteEngine.js",
+    "test:landmark": "node testLandmarkEngine.js",
+    "test:hazard": "node testHazardEngine.js",
+    "test:audio": "node testSpatialAudioEngine.js",
+    "test:indoor": "node testIndoorNavigationEngine.js",
+    "test:vision": "node testVisionAnalysis.js",
+    "test:navmode": "node testNavigationMode.js",
+    "test:airport": "node testAirportNavigator.js",
+    "test": "node testEngine.js && node testRouteEngine.js && node testLandmarkEngine.js && node testHazardEngine.js && node testSpatialAudioEngine.js && node testIndoorNavigationEngine.js && node testVisionAnalysis.js && node testNavigationMode.js && node testAirportNavigator.js",
+    "start": "node scripts/devServer.mjs"
+  },
+  "keywords": [
+    "assistive-technology",
+    "voice-engine",
+    "route-processing",
+    "landmark-verification",
+    "spatial-hazard-safety",
+    "spatial-audio-synthesizer",
+    "dead-reckoning",
+    "blind-navigation",
+    "accessibility"
+  ],
+  "author": "",
+  "license": "ISC"
+}
